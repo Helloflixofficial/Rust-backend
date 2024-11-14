@@ -2,7 +2,11 @@
 name = "actix-web-server"
 version = "0.1.0"
 edition = "2021"
-
+# cargo install cargo-watch
+# cargo watch -x run
+# cargo watch -x test
+# cargo watch -x "fmt" -x "build" -x "run"
 [dependencies]
 actix-web = "4.9.0"
 serde = { version = "1.0.215", features = ["derive"]}
+tokio = {version = "*", features = ["macros", "rt-multi-thread"]}
