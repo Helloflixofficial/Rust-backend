@@ -6,8 +6,13 @@ edition = "2021"
 # cargo watch -x run
 # cargo watch -x test
 # cargo watch -x "fmt" -x "build" -x "run"
+#sql = netstat -ano | findstr :3307  
+#sql = netstat -ano | findstr LISTENING
+
 [dependencies]
 actix-web = "4.9.0"
 serde = { version = "1.0.215", features = ["derive"]}
 tokio = {version = "*", features = ["macros", "rt-multi-thread"]}
 sqlx = {version = "*", features = ["mysql", "runtime-tokio-native-tls"]}
+# diesel = {version = "2.2.4", features = [ "mysql"]}
+dotenv = "0.15.0"
