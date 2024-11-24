@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer};
+use actix_web::{web::Data, App, HttpServer};
 mod database;
 mod routes;
 use database::*;
@@ -9,7 +9,7 @@ async fn main() -> std::io::Result<()> {
     println!("Database connected");
     let server = HttpServer::new(move || {
         App::new()
-            .app_data(database.clone())
+            .app_data(Data::new(database.clone()))
             .service(home)
             .service(hello_user)
             .service(create_new_user)
