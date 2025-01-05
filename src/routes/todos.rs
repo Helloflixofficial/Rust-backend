@@ -23,6 +23,29 @@ pub struct TypeDBError {
     pub error: String,
 }
 
+#[derive(Deserialize)]
+pub struct UpdateTitleStruct {
+    pub id: i32,
+    pub title: String,
+}
+
+#[post("/todo/title/update")]
+pub async fn update_todo_title(
+    body: Json<UpdateTitleStruct>,
+    db: Data<MySqlPool>,
+) -> impl Responder {
+    let res = sqlx::query("UPDATE todos SET title = ? WHERE id = ?")
+        .bind(&body.title)
+        .bind(body.id)
+        .execute(&**db)
+        .await;
+
+    match res {
+        Ok(_) => HttpResponse::Ok(),
+        Err(_) => HttpResponse::InternalServerError(),
+    }
+}
+
 #[post("/todo/create")]
 pub async fn create_new_todos(db: Data<MySqlPool>, body: Json<CreateNewTodos>) -> impl Responder {
     let response = sqlx::query("INSERT INTO todos (title, description) VALUES (?, ?)")
