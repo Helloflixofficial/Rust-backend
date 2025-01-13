@@ -55,28 +55,29 @@ pub async fn create_new_todos(db: Data<MySqlPool>, body: Json<CreateNewTodos>) -
         .await;
 
     match response {
-        Ok(result) => HttpResponse::Created().json(TODO {
-            id: result.last_insert_id() as i32,
+        Ok(id) => HttpResponse::Created().json(TODO {
+            id: id.last_insert_id() as i32,
             title: body.title.clone(),
             description: body.description.clone(),
-            status: "new".to_string(),
+            status: "New".to_string(),
         }),
         Err(e) => HttpResponse::InternalServerError().json(TypeDBError {
-            error: format!("Database error: {}", e),
+            error: e.to_string(),
         }),
     }
 }
 
 #[get("/todos/all")]
 pub async fn get_all_todos(db: Data<MySqlPool>) -> impl Responder {
-    let response = sqlx::query_as::<_, TODO>("SELECT id, title, description, status FROM todos")
-        .fetch_all(&**db)
-        .await;
+    let response: Result<Vec<TODO>, sqlx::Error> =
+        sqlx::query_as("SELECT id, title, description, status FROM todos")
+            .fetch_all(&**db)
+            .await;
 
     match response {
         Ok(todos) => HttpResponse::Ok().json(todos),
-        Err(e) => HttpResponse::InternalServerError().json(TypeDBError {
-            error: format!("Database error: {}", e),
+        Err(_e) => HttpResponse::InternalServerError().json(TypeDBError {
+            error: _e.to_string(),
         }),
     }
 }

@@ -4,12 +4,11 @@ pub use hello_user::*;
 pub mod home;
 pub use home::*;
 
-pub mod todos;
-// #[allow(unused_imports)]
-pub use todos::*;
-
 pub mod create_user;
 pub use create_user::*;
+
+pub mod todos;
+pub use todos::*;
 
 fn logging(path: &str) {
     println!("Path accessed: {}", path);
