@@ -1,8 +1,7 @@
 use actix_web::web::{Data, Json};
 use actix_web::{get, post, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
-use sqlx::MySqlPool;
+use sqlx::{FromRow, MySqlPool};
 
 #[derive(Deserialize)]
 pub struct CreateNewTodos {
@@ -37,12 +36,14 @@ pub async fn update_todo_title(
     let res = sqlx::query("UPDATE todos SET title = ? WHERE id = ?")
         .bind(&body.title)
         .bind(body.id)
-        .execute(&**db)
+        .execute(db.get_ref()) // Use get_ref() for clarity
         .await;
 
     match res {
-        Ok(_) => HttpResponse::Ok(),
-        Err(_) => HttpResponse::InternalServerError(),
+        Ok(_) => HttpResponse::Ok().json("Title updated successfully"),
+        Err(e) => HttpResponse::InternalServerError().json(TypeDBError {
+            error: e.to_string(),
+        }),
     }
 }
 
@@ -51,12 +52,12 @@ pub async fn create_new_todos(db: Data<MySqlPool>, body: Json<CreateNewTodos>) -
     let response = sqlx::query("INSERT INTO todos (title, description) VALUES (?, ?)")
         .bind(&body.title)
         .bind(&body.description)
-        .execute(&**db)
+        .execute(db.get_ref())
         .await;
 
     match response {
-        Ok(id) => HttpResponse::Created().json(TODO {
-            id: id.last_insert_id() as i32,
+        Ok(result) => HttpResponse::Created().json(TODO {
+            id: result.last_insert_id() as i32,
             title: body.title.clone(),
             description: body.description.clone(),
             status: "New".to_string(),
@@ -71,13 +72,13 @@ pub async fn create_new_todos(db: Data<MySqlPool>, body: Json<CreateNewTodos>) -
 pub async fn get_all_todos(db: Data<MySqlPool>) -> impl Responder {
     let response: Result<Vec<TODO>, sqlx::Error> =
         sqlx::query_as("SELECT id, title, description, status FROM todos")
-            .fetch_all(&**db)
+            .fetch_all(db.get_ref())
             .await;
 
     match response {
         Ok(todos) => HttpResponse::Ok().json(todos),
-        Err(_e) => HttpResponse::InternalServerError().json(TypeDBError {
-            error: _e.to_string(),
+        Err(e) => HttpResponse::InternalServerError().json(TypeDBError {
+            error: e.to_string(),
         }),
     }
 }

@@ -6,8 +6,10 @@ edition = "2021"
 # cargo watch -x run
 # cargo watch -x test
 # cargo watch -x "fmt" -x "build" -x "run"
-#sql = netstat -ano | findstr :3307  
-#sql = netstat -ano | findstr LISTENING
+# sql = netstat -ano | findstr :3307  
+# sql = netstat -ano | findstr LISTENING
+# cd "C:\Program Files\MySQL\MySQL Server 8.0\bin"
+
 
 [dependencies]
 actix-web = "4.9.0"
