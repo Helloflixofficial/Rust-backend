@@ -1,12 +1,17 @@
 use actix_web::web::{Data, Json};
-use actix_web::{get, post, HttpResponse, Responder};
+use actix_web::{delete, get, post, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, MySqlPool};
+use sqlx::{FromRow, MySql, MySqlPool, Pool};
 
 #[derive(Deserialize)]
 pub struct CreateNewTodos {
     pub title: String,
     pub description: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct Id {
+    pub id: i32,
 }
 
 #[derive(Serialize, Deserialize, FromRow)]
@@ -80,5 +85,18 @@ pub async fn get_all_todos(db: Data<MySqlPool>) -> impl Responder {
         Err(e) => HttpResponse::InternalServerError().json(TypeDBError {
             error: e.to_string(),
         }),
+    }
+}
+
+#[delete("/todo/delete")]
+pub async fn delete_a_todo(db: Data<Pool<MySql>>, id: Json<Id>) -> impl Responder {
+    let res = sqlx::query("DELETE FROM todos WHERE id = ?")
+        .bind(id.id)
+        .execute(&**db)
+        .await;
+
+    match res {
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
